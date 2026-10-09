@@ -1,0 +1,22 @@
+{
+  "person": {
+    "description": "Человек: имя, возраст, город, профессия и хобби.",
+    "fields": {
+      "name": "string — имя человека",
+      "age": "integer — возраст в годах",
+      "city": "string — город проживания",
+      "profession": "string — профессия",
+      "hobby": "string — хобби"
+    }
+  },
+  "product": {
+    "description": "Товар: название, бренд, цена, цвет и гарантия.",
+    "fields": {
+      "product_name": "string — название товара",
+      "brand": "string — бренд",
+      "price": "number — цена числом, без валюты в значении",
+      "color": "string — цвет",
+      "warranty": "string — срок или условия гарантии"
+    }
+  }
+}

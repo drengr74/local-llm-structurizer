@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Структурирование данных</title>
+  <style>
+    :root {
+      --bg: #f3efe6;
+      --ink: #1d1a16;
+      --muted: #6d655c;
+      --line: #e2d9cc;
+      --card: #fffdf9;
+      --accent: #0e6b56;
+      --accent-ink: #f4fff9;
+      --warn: #8a4b12;
+      --warn-bg: #fff4e8;
+      --bad: #8d2d2d;
+      --bad-bg: #fdeeee;
+      --shadow: 0 18px 40px rgba(60, 42, 20, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        radial-gradient(900px 420px at 100% -10%, #efe4cf 0%, transparent 55%),
+        var(--bg);
+      font: 16px/1.45 "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    button, textarea { font: inherit; }
+
+    .wrap {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 48px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-end;
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Palatino, "Palatino Linotype", "Iowan Old Style", Georgia, serif;
+      font-size: 40px;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+    }
+
+    .lede {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .model {
+      padding: 8px 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: var(--card);
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .composer { padding: 18px; }
+    .results { padding: 18px 18px 8px; min-height: 560px; }
+
+    .label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .schemes {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .scheme {
+      text-align: left;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: #faf7f2;
+      cursor: pointer;
+    }
+
+    .scheme strong { display: block; margin-bottom: 2px; }
+    .scheme span { color: var(--muted); font-size: 13px; }
+    .scheme[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: #eef8f4;
+      box-shadow: inset 0 0 0 1px var(--accent);
+    }
+
+    .fields {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 28px;
+      margin-bottom: 14px;
+    }
+
+    .chip {
+      padding: 4px 8px;
+      border-radius: 999px;
+      background: #f3eee6;
+      color: #4d463e;
+      font-size: 13px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 280px;
+      resize: vertical;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--ink);
+      line-height: 1.55;
+    }
+
+    textarea:focus, .scheme:focus-visible, .primary:focus-visible, .ghost:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .primary, .ghost {
+      border-radius: 12px;
+      padding: 11px 14px;
+      cursor: pointer;
+    }
+
+    .primary {
+      border: 0;
+      background: var(--accent);
+      color: var(--accent-ink);
+    }
+
+    .primary:disabled { opacity: 0.65; cursor: progress; }
+
+    .ghost {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .hint { margin-left: auto; color: var(--muted); font-size: 13px; }
+
+    .status {
+      margin-top: 12px;
+      min-height: 22px;
+      color: var(--muted);
+    }
+
+    .results-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .results-head h2 {
+      margin: 0;
+      font-family: Palatino, "Palatino Linotype", Georgia, serif;
+      font-size: 28px;
+      font-weight: 600;
+    }
+
+    .empty {
+      margin: 48px 8px;
+      color: var(--muted);
+    }
+
+    .card {
+      padding: 14px 0 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .badges { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    .badge {
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #eef8f4;
+      color: var(--accent);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .badge.warn { background: var(--warn-bg); color: var(--warn); }
+    .badge.bad { background: var(--bad-bg); color: var(--bad); }
+
+    .source { margin: 0 0 10px; color: var(--ink); }
+    .note { margin: 0; color: var(--warn); }
+    .error { margin: 0; color: var(--bad); }
+
+    dl {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 6px 10px;
+      margin: 0;
+    }
+
+    dt { color: var(--muted); }
+    dd { margin: 0; }
+
+    @media (max-width: 860px) {
+      h1 { font-size: 32px; }
+      header, .layout, .actions { display: block; }
+      .model, .hint { margin-top: 10px; }
+      .schemes { grid-template-columns: 1fr; }
+      .ghost, .primary { width: 100%; margin-top: 8px; }
+      .results { min-height: 0; margin-top: 16px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>Структурирование</h1>
+        <p class="lede">Текст разбирается локальной моделью и складывается в карточки по схеме.</p>
+      </div>
+      <div class="model" id="model">llama3.2</div>
+    </header>
+
+    <div class="layout">
+      <section class="panel composer">
+        <span class="label">Схема</span>
+        <div class="schemes" id="schemes"></div>
+        <div class="fields" id="fields"></div>
+        <label class="label" for="source">Текст, одна запись на строку</label>
+        <textarea id="source" spellcheck="false"></textarea>
+        <div class="actions">
+          <button class="primary" id="run" type="button">Структурировать</button>
+          <button class="ghost" id="reload" type="button">Вернуть input.txt</button>
+          <span class="hint">⌘/Ctrl + Enter</span>
+        </div>
+        <div class="status" id="status" role="status"></div>
+      </section>
+
+      <section class="panel results">
+        <div class="results-head">
+          <h2>Результат</h2>
+          <span class="hint" id="saved"></span>
+        </div>
+        <div id="cards"></div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    const FIELD_LABELS = {
+      name: "Имя",
+      age: "Возраст",
+      city: "Город",
+      profession: "Профессия",
+      hobby: "Хобби",
+      product_name: "Название",
+      brand: "Бренд",
+      price: "Цена",
+      color: "Цвет",
+      warranty: "Гарантия",
+    };
+    const SCHEMA_TITLES = {
+      auto: ["Авто", "Схема выбирается для каждой строки"],
+      person: ["Человек", "Имя, возраст, город, работа, хобби"],
+      product: ["Товар", "Название, бренд, цена, цвет, гарантия"],
+      unknown: ["Не распознано", ""],
+    };
+
+    const schemesEl = document.querySelector("#schemes");
+    const fieldsEl = document.querySelector("#fields");
+    const sourceEl = document.querySelector("#source");
+    const cardsEl = document.querySelector("#cards");
+    const statusEl = document.querySelector("#status");
+    const savedEl = document.querySelector("#saved");
+    const runEl = document.querySelector("#run");
+    const modelEl = document.querySelector("#model");
+
+    let state = { schemas: {}, source: "" };
+    let selected = "auto";
+    let fileSource = "";
+
+    function titleOf(name) {
+      return (SCHEMA_TITLES[name] || [name, ""])[0];
+    }
+
+    function renderSchemes() {
+      const names = ["auto", ...Object.keys(state.schemas)];
+      schemesEl.innerHTML = "";
+      for (const name of names) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "scheme";
+        button.setAttribute("aria-pressed", String(name === selected));
+        const [title, hint] = SCHEMA_TITLES[name] || [name, state.schemas[name]?.description || ""];
+        button.innerHTML = `<strong>${title}</strong><span>${hint}</span>`;
+        button.addEventListener("click", () => {
+          selected = name;
+          renderSchemes();
+          renderFields();
+        });
+        schemesEl.appendChild(button);
+      }
+    }
+
+    function renderFields() {
+      fieldsEl.innerHTML = "";
+      const schema = state.schemas[selected];
+      const names = schema ? Object.keys(schema.fields || {}) : ["person", "product", "unknown"];
+      for (const name of names) {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = selected === "auto" ? titleOf(name) : (FIELD_LABELS[name] || name);
+        fieldsEl.appendChild(chip);
+      }
+    }
+
+    function badge(text, kind) {
+      const span = document.createElement("span");
+      span.className = kind ? `badge ${kind}` : "badge";
+      span.textContent = text;
+      return span;
+    }
+
+    function renderCards(results) {
+      cardsEl.innerHTML = "";
+      if (!results.length) {
+        const empty = document.createElement("p");
+        empty.className = "empty";
+        empty.textContent = "Здесь появятся карточки после разбора текста.";
+        cardsEl.appendChild(empty);
+        return;
+      }
+      for (const item of results) {
+        const card = document.createElement("article");
+        card.className = "card";
+        const top = document.createElement("div");
+        top.className = "card-top";
+        const badges = document.createElement("div");
+        badges.className = "badges";
+        badges.append(badge(item.detected_schema === "manual" ? "вручную" : "авто"));
+        const schemaKind = item.error ? "bad" : item.schema === "unknown" ? "warn" : "";
+        badges.append(badge(titleOf(item.schema), schemaKind));
+        const index = document.createElement("span");
+        index.className = "hint";
+        index.textContent = `строка ${item.line_number}`;
+        top.append(badges, index);
+
+        const source = document.createElement("p");
+        source.className = "source";
+        source.textContent = item.source;
+        card.append(top, source);
+
+        if (item.message) {
+          const note = document.createElement("p");
+          note.className = "note";
+          note.textContent = item.message;
+          card.append(note);
+        } else if (item.error) {
+          const error = document.createElement("p");
+          error.className = "error";
+          error.textContent = item.error;
+          card.append(error);
+        } else if (item.data) {
+          const list = document.createElement("dl");
+          for (const [key, value] of Object.entries(item.data)) {
+            const dt = document.createElement("dt");
+            dt.textContent = FIELD_LABELS[key] || key;
+            const dd = document.createElement("dd");
+            dd.textContent = value === null || value === "" ? "—" : String(value);
+            list.append(dt, dd);
+          }
+          card.append(list);
+        }
+        cardsEl.append(card);
+      }
+    }
+
+    async function loadState() {
+      const response = await fetch("/api/state");
+      state = await response.json();
+      fileSource = state.source || "";
+      sourceEl.value = fileSource;
+      modelEl.textContent = state.model || "llama3.2";
+      renderSchemes();
+      renderFields();
+      renderCards(state.results || []);
+      if ((state.results || []).length) savedEl.textContent = "последний output.json";
+    }
+
+    async function run() {
+      runEl.disabled = true;
+      savedEl.textContent = "";
+      statusEl.textContent = "Модель читает строки…";
+      renderCards([]);
+      const collected = [];
+      try {
+        const response = await fetch("/api/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ schema: selected, text: sourceEl.value }),
+        });
+        if (!response.ok) {
+          const problem = await response.json();
+          throw new Error(problem.error || "Не удалось обработать текст");
+        }
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        while (true) {
+          const chunk = await reader.read();
+          if (chunk.done) break;
+          buffer += decoder.decode(chunk.value, { stream: true });
+          const parts = buffer.split("\n");
+          buffer = parts.pop() || "";
+          for (const part of parts) {
+            if (!part.trim()) continue;
+            const event = JSON.parse(part);
+            if (event.type === "line") {
+              collected.push(event.result);
+              statusEl.textContent = `Готово ${collected.length} из ${event.total}`;
+              renderCards(collected);
+            }
+            if (event.type === "done") {
+              statusEl.textContent = `Разобрано строк: ${event.count}`;
+              savedEl.textContent = "сохранено в output.json";
+            }
+          }
+        }
+      } catch (error) {
+        statusEl.textContent = error.message || "Ошибка запроса";
+      } finally {
+        runEl.disabled = false;
+      }
+    }
+
+    document.querySelector("#run").addEventListener("click", run);
+    document.querySelector("#reload").addEventListener("click", () => {
+      sourceEl.value = fileSource;
+      statusEl.textContent = "Текст снова взят из input.txt";
+    });
+    document.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") run();
+    });
+
+    loadState().catch(() => {
+      statusEl.textContent = "Не удалось открыть данные приложения";
+    });
+  </script>
+</body>
+</html>
